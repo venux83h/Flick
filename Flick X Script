@@ -165,11 +165,11 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- =========================
--- NOCOLIP LOOP
+-- NOCLIP LOOP
 -- =========================
 RunService.Stepped:Connect(function()
     if LocalPlayer.Character then
-        for _,v in ipairs(LocalPlayer.Character:GetDescendants()) do
+        for _, v in ipairs(LocalPlayer.Character:GetDescendants()) do
             if v:IsA("BasePart") then
                 v.CanCollide = not Noclip
             end
@@ -184,420 +184,66 @@ local CombatTab = Window:CreateTab("Combat")
 local VisualTab = Window:CreateTab("Visuals")
 local MiscTab = Window:CreateTab("Misc")
 
--- Combat Tab
-CombatTab:CreateToggle({Name="Aimbot (Hold RMB)", CurrentValue=false, Callback=function(v) Aimbot=v end})
-CombatTab:CreateToggle({Name="Silent Aim (Soft)", CurrentValue=false, Callback=function(v) SilentAim=v end})
-CombatTab:CreateToggle({Name="Team Check", CurrentValue=true, Callback=function(v) TeamCheck=v end})
-CombatTab:CreateSlider({Name="Aimbot FOV", Range={50,400}, Increment=5, CurrentValue=AimFOV, Callback=function(v) AimFOV=v end})
-CombatTab:CreateSlider({Name="Smoothness", Range={0.05,0.5}, Increment=0.01, CurrentValue=Smoothness, Callback=function(v) Smoothness=v end})
-
--- Visual Tab
-VisualTab:CreateToggle({Name="Show FOV Circle", CurrentValue=true, Callback=function(v) ShowFOV=v end})
-
--- Misc Tab
-MiscTab:CreateToggle({Name="Noclip", CurrentValue=false, Callback=function(v) Noclip=v end})
-MiscTab:CreateButton({Name="Rejoin", Callback=function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end})
-MiscTab:CreateButton({Name="Destroy UI", Callback=function() Rayfield:Destroy() FOVCircle:Remove() end})        SaveKey = true,
-        GrabKeyFromSite = false,
-        Key = { SCRIPT_KEY }
-    }
+-- Combat
+CombatTab:CreateToggle({
+    Name = "Aimbot (Hold RMB)",
+    CurrentValue = false,
+    Callback = function(v) Aimbot = v end
 })
 
-pcall(function()
-    Rayfield:SetWatermarkVisibility(false)
-end)
-
--- =========================
--- VARIABLES
--- =========================
-local Aimbot = false
-local SilentAim = false
-local TeamCheck = true
-local Holding = false
-local AimFOV = 150
-local Smoothness = 0.18
-local ShowFOV = true
-local Noclip = false
-
--- =========================
--- INPUT (RMB)
--- =========================
-UserInputService.InputBegan:Connect(function(i, g)
-    if not g and i.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = true
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = false
-    end
-end)
-
--- =========================
--- FOV CIRCLE (CENTERED)
--- =========================
-local FOVCircle = Drawing.new("Circle")
-FOVCircle.Color = Color3.fromRGB(255,255,255)
-FOVCircle.Thickness = 1
-FOVCircle.NumSides = 100
-FOVCircle.Filled = false
-
-RunService.RenderStepped:Connect(function()
-    local vp = Camera.ViewportSize
-    FOVCircle.Position = Vector2.new(vp.X / 2, vp.Y / 2)
-    FOVCircle.Radius = AimFOV
-    FOVCircle.Visible = ShowFOV
-end)
-
--- =========================
--- TEAM CHECK
--- =========================
-local function IsEnemy(player)
-    if not TeamCheck then return true end
-    if player.Team and LocalPlayer.Team then
-        return player.Team ~= LocalPlayer.Team
-    end
-    return true
-end
-
--- =========================
--- GET CLOSEST HEAD
--- =========================
-local function GetClosestTarget()
-    local closest, shortest = nil, AimFOV
-    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer
-        and p.Character
-        and p.Character:FindFirstChild("Humanoid")
-        and p.Character.Humanoid.Health > 0
-        and IsEnemy(p) then
-
-            local head = p.Character:FindFirstChild("Head")
-            if head then
-                local pos, visible = Camera:WorldToViewportPoint(head.Position)
-                if visible then
-                    local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
-                    if dist < shortest then
-                        shortest = dist
-                        closest = head
-                    end
-                end
-            end
-        end
-    end
-    return closest
-end
-
--- =========================
--- AIMBOT + SILENT AIM
--- =========================
-RunService.RenderStepped:Connect(function()
-    local target = GetClosestTarget()
-    if target then
-        if Aimbot and Holding then
-            Camera.CFrame = Camera.CFrame:Lerp(
-                CFrame.new(Camera.CFrame.Position, target.Position),
-                Smoothness
-            )
-        end
-
-        if SilentAim then
-            Camera.Focus = CFrame.new(target.Position)
-        end
-    end
-end)
-
--- =========================
--- NOCOLIP LOOP
--- =========================
-RunService.Stepped:Connect(function()
-    if LocalPlayer.Character then
-        for _,v in ipairs(LocalPlayer.Character:GetDescendants()) do
-            if v:IsA("BasePart") then
-                v.CanCollide = not Noclip
-            end
-        end
-    end
-end)
-
--- =========================
--- UI TABS
--- =========================
-local CombatTab = Window:CreateTab("Combat")
-local VisualTab = Window:CreateTab("Visuals")
-local MiscTab = Window:CreateTab("Misc")
-
--- Combat Tab
-CombatTab:CreateToggle({Name="Aimbot (Hold RMB)", CurrentValue=false, Callback=function(v) Aimbot=v end})
-CombatTab:CreateToggle({Name="Silent Aim (Soft)", CurrentValue=false, Callback=function(v) SilentAim=v end})
-CombatTab:CreateToggle({Name="Team Check", CurrentValue=true, Callback=function(v) TeamCheck=v end})
-CombatTab:CreateSlider({Name="Aimbot FOV", Range={50,400}, Increment=5, CurrentValue=AimFOV, Callback=function(v) AimFOV=v end})
-CombatTab:CreateSlider({Name="Smoothness", Range={0.05,0.5}, Increment=0.01, CurrentValue=Smoothness, Callback=function(v) Smoothness=v end})
-
--- Visual Tab
-VisualTab:CreateToggle({Name="Show FOV Circle", CurrentValue=true, Callback=function(v) ShowFOV=v end})
-
--- Misc Tab
-MiscTab:CreateToggle({Name="Noclip", CurrentValue=false, Callback=function(v) Noclip=v end})
-MiscTab:CreateButton({Name="Rejoin", Callback=function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end})
-MiscTab:CreateButton({Name="Destroy UI", Callback=function() Rayfield:Destroy() FOVCircle:Remove() end})        Title = "Flick X Script",
-        Text = "Get key from Discord",
-        Duration = 6
-    })
-end)
-
--- =========================
--- RAYFIELD
--- =========================
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
-
-local Window = Rayfield:CreateWindow({
-    Name = "Flick X Script",
-    LoadingTitle = "Flick X Script",
-    LoadingSubtitle = "",
-    ConfigurationSaving = { Enabled = false },
-    KeySystem = true,
-    KeySettings = {
-        Title = "Flick X Script",
-        Subtitle = "Key System",
-        Note = "Discord copied automatically",
-        FileName = "Flick-Key",
-        SaveKey = true,
-        GrabKeyFromSite = false,
-        Key = { "Flick-Key" }
-    }
+CombatTab:CreateToggle({
+    Name = "Silent Aim (Soft)",
+    CurrentValue = false,
+    Callback = function(v) SilentAim = v end
 })
 
-pcall(function()
-    Rayfield:SetWatermarkVisibility(false)
-end)
+CombatTab:CreateToggle({
+    Name = "Team Check",
+    CurrentValue = true,
+    Callback = function(v) TeamCheck = v end
+})
 
--- =========================
--- VARIABLES
--- =========================
-local Aimbot = false
-local SilentAim = false
-local TeamCheck = true
-local Holding = false
-local AimFOV = 150
-local Smoothness = 0.18
-local ShowFOV = true
-local Noclip = false
+CombatTab:CreateSlider({
+    Name = "Aimbot FOV",
+    Range = {50, 400},
+    Increment = 5,
+    CurrentValue = AimFOV,
+    Callback = function(v) AimFOV = v end
+})
 
--- =========================
--- INPUT (RMB)
--- =========================
-UserInputService.InputBegan:Connect(function(i, g)
-    if not g and i.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = true
+CombatTab:CreateSlider({
+    Name = "Smoothness",
+    Range = {0.05, 0.5},
+    Increment = 0.01,
+    CurrentValue = Smoothness,
+    Callback = function(v) Smoothness = v end
+})
+
+-- Visuals
+VisualTab:CreateToggle({
+    Name = "Show FOV Circle",
+    CurrentValue = true,
+    Callback = function(v) ShowFOV = v end
+})
+
+-- Misc
+MiscTab:CreateToggle({
+    Name = "Noclip",
+    CurrentValue = false,
+    Callback = function(v) Noclip = v end
+})
+
+MiscTab:CreateButton({
+    Name = "Rejoin",
+    Callback = function()
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
     end
-end)
+})
 
-UserInputService.InputEnded:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = false
+MiscTab:CreateButton({
+    Name = "Destroy UI",
+    Callback = function()
+        Rayfield:Destroy()
+        pcall(function() FOVCircle:Remove() end)
     end
-end)
-
--- =========================
--- FOV CIRCLE (CENTERED)
--- =========================
-local FOVCircle = Drawing.new("Circle")
-FOVCircle.Color = Color3.fromRGB(255,255,255)
-FOVCircle.Thickness = 1
-FOVCircle.NumSides = 100
-FOVCircle.Filled = false
-
-RunService.RenderStepped:Connect(function()
-    local vp = Camera.ViewportSize
-    FOVCircle.Position = Vector2.new(vp.X/2, vp.Y/2)
-    FOVCircle.Radius = AimFOV
-    FOVCircle.Visible = ShowFOV
-end)
-
--- =========================
--- TEAM CHECK
--- =========================
-local function IsEnemy(player)
-    if not TeamCheck then return true end
-    if player.Team and LocalPlayer.Team then
-        return player.Team ~= LocalPlayer.Team
-    end
-    return true
-end
-
--- =========================
--- GET TARGET (HEAD LOCK)
--- =========================
-local function GetClosestTarget()
-    local closest, shortest = nil, AimFOV
-    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer
-        and p.Character
-        and p.Character:FindFirstChild("Humanoid")
-        and p.Character.Humanoid.Health > 0
-        and IsEnemy(p) then
-
-            local head = p.Character:FindFirstChild("Head")
-            if head then
-                local pos, visible = Camera:WorldToViewportPoint(head.Position)
-                if visible then
-                    local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
-                    if dist < shortest then
-                        shortest = dist
-                        closest = head
-                    end
-                end
-            end
-        end
-    end
-    return closest
-end
-
--- =========================
--- AIMBOT + SOFT SILENT AIM
--- =========================
-RunService.RenderStepped:Connect(function()
-    local target = GetClosestTarget()
-    if target then
-        if Aimbot and Holding then
-            Camera.CFrame = Camera.CFrame:Lerp(
-                CFrame.new(Camera.CFrame.Position, target.Position),
-                Smoothness
-            )
-        end
-
-        if SilentAim then
-            Camera.Focus = CFrame.new(target.Position)
-        end
-    end
-end)
-
--- =========================
--- NOCOLIP LOOP
--- =========================
-RunService.Stepped:Connect(function()
-    if LocalPlayer.Character then
-        for _,v in ipairs(LocalPlayer.Character:GetDescendants()) do
-            if v:IsA("BasePart") then
-                v.CanCollide = not Noclip
-            end
-        end
-    end
-end)
-
--- =========================
--- UI TABS
--- =========================
-local CombatTab = Window:CreateTab("Combat")
-local VisualTab = Window:CreateTab("Visuals")
-local MiscTab = Window:CreateTab("Misc")
-
--- Combat Tab
-CombatTab:CreateToggle({Name="Aimbot (Hold RMB)", CurrentValue=false, Callback=function(v) Aimbot=v end})
-CombatTab:CreateToggle({Name="Silent Aim (Soft)", CurrentValue=false, Callback=function(v) SilentAim=v end})
-CombatTab:CreateToggle({Name="Team Check", CurrentValue=true, Callback=function(v) TeamCheck=v end})
-CombatTab:CreateSlider({Name="Aimbot FOV", Range={50,400}, Increment=5, CurrentValue=AimFOV, Callback=function(v) AimFOV=v end})
-CombatTab:CreateSlider({Name="Smoothness", Range={0.05,0.5}, Increment=0.01, CurrentValue=Smoothness, Callback=function(v) Smoothness=v end})
-
--- Visual Tab
-VisualTab:CreateToggle({Name="Show FOV Circle", CurrentValue=true, Callback=function(v) ShowFOV=v end})
-
--- Misc Tab
-MiscTab:CreateToggle({Name="Noclip", CurrentValue=false, Callback=function(v) Noclip=v end})
-MiscTab:CreateButton({Name="Rejoin", Callback=function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end})
-MiscTab:CreateButton({Name="Destroy UI", Callback=function() Rayfield:Destroy() FOVCircle:Remove() end})    if not TeamCheck then return true end
-    if player.Team and LocalPlayer.Team then
-        return player.Team ~= LocalPlayer.Team
-    end
-    return true
-end
-
--- =========================
--- GET TARGET (HEAD LOCK)
--- =========================
-local function GetClosestTarget()
-    local closest, shortest = nil, AimFOV
-    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer
-        and p.Character
-        and p.Character:FindFirstChild("Humanoid")
-        and p.Character.Humanoid.Health > 0
-        and IsEnemy(p) then
-
-            local head = p.Character:FindFirstChild("Head")
-            if head then
-                local pos, visible = Camera:WorldToViewportPoint(head.Position)
-                if visible then
-                    local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
-                    if dist < shortest then
-                        shortest = dist
-                        closest = head
-                    end
-                end
-            end
-        end
-    end
-    return closest
-end
-
--- =========================
--- AIMBOT + SOFT SILENT AIM
--- =========================
-RunService.RenderStepped:Connect(function()
-    local target = GetClosestTarget()
-    if target then
-        if Aimbot and Holding then
-            Camera.CFrame = Camera.CFrame:Lerp(
-                CFrame.new(Camera.CFrame.Position, target.Position),
-                Smoothness
-            )
-        end
-
-        if SilentAim then
-            Camera.Focus = CFrame.new(target.Position)
-        end
-    end
-end)
-
--- =========================
--- NOCOLIP LOOP
--- =========================
-RunService.Stepped:Connect(function()
-    if LocalPlayer.Character then
-        for _,v in ipairs(LocalPlayer.Character:GetDescendants()) do
-            if v:IsA("BasePart") then
-                v.CanCollide = not Noclip
-            end
-        end
-    end
-end)
-
--- =========================
--- UI TABS
--- =========================
-local CombatTab = Window:CreateTab("Combat")
-local VisualTab = Window:CreateTab("Visuals")
-local MiscTab = Window:CreateTab("Misc")
-
--- Combat Tab
-CombatTab:CreateToggle({Name="Aimbot (Hold RMB)", CurrentValue=false, Callback=function(v) Aimbot=v end})
-CombatTab:CreateToggle({Name="Silent Aim (Soft)", CurrentValue=false, Callback=function(v) SilentAim=v end})
-CombatTab:CreateToggle({Name="Team Check", CurrentValue=true, Callback=function(v) TeamCheck=v end})
-CombatTab:CreateSlider({Name="Aimbot FOV", Range={50,400}, Increment=5, CurrentValue=AimFOV, Callback=function(v) AimFOV=v end})
-CombatTab:CreateSlider({Name="Smoothness", Range={0.05,0.5}, Increment=0.01, CurrentValue=Smoothness, Callback=function(v) Smoothness=v end})
-
--- Visual Tab
-VisualTab:CreateToggle({Name="Show FOV Circle", CurrentValue=true, Callback=function(v) ShowFOV=v end})
-
--- Misc Tab
-MiscTab:CreateToggle({Name="Noclip", CurrentValue=false, Callback=function(v) Noclip=v end})
-MiscTab:CreateButton({Name="Rejoin", Callback=function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end})
-MiscTab:CreateButton({Name="Destroy UI", Callback=function() Rayfield:Destroy() FOVCircle:Remove() end})
+})
