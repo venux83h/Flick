@@ -1,322 +1,328 @@
--- =========================
+-- =========================================
 -- SERVICES
--- =========================
+-- =========================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+local UIS = game:GetService("UserInputService")
 local TeleportService = game:GetService("TeleportService")
-local StarterGui = game:GetService("StarterGui")
-
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- =========================
--- DISCORD COPY + NOTIFY
--- =========================
-pcall(function()
-    setclipboard("https://discord.gg/z4hEaaEnS")
+-- =========================================
+-- KEY SYSTEM
+-- =========================================
+local CORRECT_KEY = "Flick-Key"
+local KeyVerified = false
+
+local KeyGui = Instance.new("ScreenGui")
+KeyGui.ResetOnSpawn = false
+KeyGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local KeyFrame = Instance.new("Frame", KeyGui)
+KeyFrame.Size = UDim2.new(0,320,0,210)
+KeyFrame.Position = UDim2.new(0.5,-160,0.5,-105)
+KeyFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Instance.new("UICorner", KeyFrame)
+
+local KeyTitle = Instance.new("TextLabel", KeyFrame)
+KeyTitle.Size = UDim2.new(1,0,0,40)
+KeyTitle.BackgroundTransparency = 1
+KeyTitle.Text = "FXH KEY SYSTEM"
+KeyTitle.Font = Enum.Font.Arcade
+KeyTitle.TextSize = 18
+KeyTitle.TextColor3 = Color3.new(1,1,1)
+
+local KeyBox = Instance.new("TextBox", KeyFrame)
+KeyBox.Size = UDim2.new(1,-40,0,35)
+KeyBox.Position = UDim2.new(0,20,0,55)
+KeyBox.PlaceholderText = "Enter key"
+KeyBox.ClearTextOnFocus = false
+KeyBox.Font = Enum.Font.Code
+KeyBox.TextSize = 14
+KeyBox.TextColor3 = Color3.new(1,1,1)
+KeyBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Instance.new("UICorner", KeyBox)
+
+local VerifyBtn = Instance.new("TextButton", KeyFrame)
+VerifyBtn.Size = UDim2.new(1,-40,0,35)
+VerifyBtn.Position = UDim2.new(0,20,0,100)
+VerifyBtn.Text = "VERIFY"
+VerifyBtn.Font = Enum.Font.Arcade
+VerifyBtn.TextSize = 14
+VerifyBtn.TextColor3 = Color3.new(1,1,1)
+VerifyBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+Instance.new("UICorner", VerifyBtn)
+
+local CopyBtn = Instance.new("TextButton", KeyFrame)
+CopyBtn.Size = UDim2.new(1,-40,0,30)
+CopyBtn.Position = UDim2.new(0,20,0,145)
+CopyBtn.Text = "COPY DISCORD (GET KEY)"
+CopyBtn.Font = Enum.Font.Arcade
+CopyBtn.TextSize = 13
+CopyBtn.TextColor3 = Color3.new(1,1,1)
+CopyBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+Instance.new("UICorner", CopyBtn)
+
+local Status = Instance.new("TextLabel", KeyFrame)
+Status.Size = UDim2.new(1,0,0,20)
+Status.Position = UDim2.new(0,0,1,-20)
+Status.BackgroundTransparency = 1
+Status.Text = ""
+Status.Font = Enum.Font.Code
+Status.TextSize = 13
+Status.TextColor3 = Color3.fromRGB(255,80,80)
+
+CopyBtn.MouseButton1Click:Connect(function()
+	pcall(function()
+		setclipboard("https://discord.gg/z4hEaaEnS")
+	end)
+	Status.Text = "Discord copied"
 end)
 
-pcall(function()
-    StarterGui:SetCore("SendNotification", {
-        Title = "Flick X Script",
-        Text = "Discord copied. Get key there.",
-        Duration = 5
-    })
+VerifyBtn.MouseButton1Click:Connect(function()
+	if KeyBox.Text == CORRECT_KEY then
+		KeyVerified = true
+		KeyGui:Destroy()
+	else
+		Status.Text = "Invalid key"
+	end
 end)
 
--- =========================
--- RAYFIELD (CORRECT SYNTAX)
--- =========================
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+repeat task.wait() until KeyVerified
 
-local Window = Rayfield:CreateWindow({
-    Name = "Flick X Script",
-    LoadingTitle = "Flick X Script",
-    LoadingSubtitle = "made by venux",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "FlickX",
-        FileName = "Config"
-    }
-})
+-- =========================================
+-- MAIN HUB
+-- =========================================
+local Gui = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
+Gui.ResetOnSpawn = false
 
-Rayfield:SetWatermarkVisibility(false)
+local Main = Instance.new("Frame", Gui)
+Main.Size = UDim2.new(0,420,0,320)
+Main.Position = UDim2.new(0.5,-210,0.5,-160)
+Main.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Instance.new("UICorner", Main)
 
--- =========================
--- VARIABLES
--- =========================
+-- Drag
+local drag, startPos, startInput
+Main.InputBegan:Connect(function(i)
+	if i.UserInputType == Enum.UserInputType.MouseButton1 then
+		drag = true
+		startInput = i.Position
+		startPos = Main.Position
+	end
+end)
+UIS.InputChanged:Connect(function(i)
+	if drag and i.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = i.Position - startInput
+		Main.Position = UDim2.new(
+			startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+UIS.InputEnded:Connect(function(i)
+	if i.UserInputType == Enum.UserInputType.MouseButton1 then
+		drag = false
+	end
+end)
+
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(1,0,0,40)
+Title.BackgroundTransparency = 1
+Title.Text = "FXH HUB"
+Title.Font = Enum.Font.Arcade
+Title.TextSize = 20
+Title.TextColor3 = Color3.new(1,1,1)
+
+-- Tabs
+local Tabs = Instance.new("Frame", Main)
+Tabs.Size = UDim2.new(1,0,0,40)
+Tabs.Position = UDim2.new(0,0,0,40)
+Tabs.BackgroundTransparency = 1
+
+local function TabBtn(txt,x)
+	local b = Instance.new("TextButton", Tabs)
+	b.Size = UDim2.new(0,130,0,35)
+	b.Position = UDim2.new(0,x,0,0)
+	b.Text = txt
+	b.Font = Enum.Font.Arcade
+	b.TextSize = 14
+	b.TextColor3 = Color3.new(1,1,1)
+	b.BackgroundColor3 = Color3.fromRGB(35,35,35)
+	Instance.new("UICorner", b)
+	return b
+end
+
+local CombatBtn = TabBtn("Combat",10)
+local VisualBtn = TabBtn("Visuals",145)
+local MiscBtn = TabBtn("Misc",280)
+
+local function TabFrame()
+	local f = Instance.new("Frame", Main)
+	f.Size = UDim2.new(1,-20,1,-100)
+	f.Position = UDim2.new(0,10,0,90)
+	f.BackgroundTransparency = 1
+	f.Visible = false
+	return f
+end
+
+local CombatTab = TabFrame()
+local VisualTab = TabFrame()
+local MiscTab = TabFrame()
+CombatTab.Visible = true
+
+local function Switch(tab)
+	CombatTab.Visible=false
+	VisualTab.Visible=false
+	MiscTab.Visible=false
+	tab.Visible=true
+end
+
+CombatBtn.MouseButton1Click:Connect(function() Switch(CombatTab) end)
+VisualBtn.MouseButton1Click:Connect(function() Switch(VisualTab) end)
+MiscBtn.MouseButton1Click:Connect(function() Switch(MiscTab) end)
+
+-- =========================================
+-- FEATURES
+-- =========================================
 local Aimbot = false
-local TeamCheck = true
 local Holding = false
+local TeamCheck = true
 local AimFOV = 150
 local Smoothness = 0.2
-local ShowFOV = true
-local ESPEnabled = false
-local Noclip = false
 local WalkSpeed = 16
 local JumpPower = 50
+local Noclip = false
+local FlyEnabled = false
+local FlySpeed = 50
 
--- =========================
--- INPUT (RMB HOLD)
--- =========================
-UserInputService.InputBegan:Connect(function(i, g)
-    if g then return end
-    if i.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = true
-    end
+-- RMB Hold
+UIS.InputBegan:Connect(function(i,g)
+	if not g and i.UserInputType==Enum.UserInputType.MouseButton2 then
+		Holding=true
+	end
+end)
+UIS.InputEnded:Connect(function(i)
+	if i.UserInputType==Enum.UserInputType.MouseButton2 then
+		Holding=false
+	end
 end)
 
-UserInputService.InputEnded:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = false
-    end
-end)
-
--- =========================
--- FOV CIRCLE (CENTERED)
--- =========================
-local FOVCircle = Drawing.new("Circle")
-FOVCircle.Color = Color3.fromRGB(255,255,255)
-FOVCircle.Thickness = 1
-FOVCircle.NumSides = 100
-FOVCircle.Filled = false
-
-RunService.RenderStepped:Connect(function()
-    local vp = Camera.ViewportSize
-    FOVCircle.Position = Vector2.new(vp.X/2, vp.Y/2)
-    FOVCircle.Radius = AimFOV
-    FOVCircle.Visible = ShowFOV
-end)
-
--- =========================
--- TEAM CHECK
--- =========================
 local function IsEnemy(p)
-    if not TeamCheck then return true end
-    if p.Team and LocalPlayer.Team then
-        return p.Team ~= LocalPlayer.Team
-    end
-    return true
+	if not TeamCheck then return true end
+	if p.Team and LocalPlayer.Team then
+		return p.Team ~= LocalPlayer.Team
+	end
+	return true
 end
 
--- =========================
--- GET TARGET (HEAD)
--- =========================
-local function GetClosestTarget()
-    local closest
-    local shortest = AimFOV
-    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-
-    for _,p in ipairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer
-        and p.Character
-        and p.Character:FindFirstChild("Head")
-        and p.Character:FindFirstChild("Humanoid")
-        and p.Character.Humanoid.Health > 0
-        and IsEnemy(p) then
-
-            local pos, visible = Camera:WorldToViewportPoint(p.Character.Head.Position)
-            if visible then
-                local dist = (Vector2.new(pos.X,pos.Y) - center).Magnitude
-                if dist < shortest then
-                    shortest = dist
-                    closest = p.Character.Head
-                end
-            end
-        end
-    end
-    return closest
-end
-
--- =========================
--- AIMBOT LOOP
--- =========================
-RunService.RenderStepped:Connect(function()
-    if not Aimbot or not Holding then return end
-    local target = GetClosestTarget()
-    if not target then return end
-
-    Camera.CFrame = Camera.CFrame:Lerp(
-        CFrame.new(Camera.CFrame.Position, target.Position),
-        Smoothness
-    )
-end)
-
--- =========================
--- ESP (NAMES)
--- =========================
-local ESPObjects = {}
-
-local function ClearESP()
-    for _,v in pairs(ESPObjects) do
-        v:Remove()
-    end
-    ESPObjects = {}
+local function GetTarget()
+	local best,dist=nil,AimFOV
+	local center=Vector2.new(Camera.ViewportSize.X/2,Camera.ViewportSize.Y/2)
+	for _,p in pairs(Players:GetPlayers()) do
+		if p~=LocalPlayer and p.Character and p.Character:FindFirstChild("Head")
+		and p.Character:FindFirstChild("Humanoid")
+		and p.Character.Humanoid.Health>0
+		and IsEnemy(p) then
+			local pos,vis=Camera:WorldToViewportPoint(p.Character.Head.Position)
+			if vis then
+				local mag=(Vector2.new(pos.X,pos.Y)-center).Magnitude
+				if mag<dist then
+					dist=mag
+					best=p.Character.Head
+				end
+			end
+		end
+	end
+	return best
 end
 
 RunService.RenderStepped:Connect(function()
-    ClearESP()
-    if not ESPEnabled then return end
-
-    for _,p in ipairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
-            local pos, vis = Camera:WorldToViewportPoint(p.Character.Head.Position)
-            if vis then
-                local t = Drawing.new("Text")
-                t.Text = p.Name
-                t.Size = 14
-                t.Center = true
-                t.Outline = true
-                t.Color = Color3.fromRGB(255,0,0)
-                t.Position = Vector2.new(pos.X, pos.Y - 20)
-                table.insert(ESPObjects, t)
-            end
-        end
-    end
+	if Aimbot and Holding then
+		local t=GetTarget()
+		if t then
+			CFrame.new(Camera.CFrame.Position,t.Position)
+			Camera.CFrame=Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position,t.Position),Smoothness)
+		end
+	end
 end)
 
--- =========================
--- Noclip + Movement
--- =========================
 RunService.Stepped:Connect(function()
-    local char = LocalPlayer.Character
-    if not char then return end
-
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum.WalkSpeed = WalkSpeed
-        hum.JumpPower = JumpPower
-    end
-
-    if Noclip then
-        for _,v in ipairs(char:GetDescendants()) do
-            if v:IsA("BasePart") then
-                v.CanCollide = false
-            end
-        end
-    end
+	local c=LocalPlayer.Character
+	if not c then return end
+	local h=c:FindFirstChildOfClass("Humanoid")
+	if h then
+		h.WalkSpeed=WalkSpeed
+		h.JumpPower=JumpPower
+	end
+	if Noclip then
+		for _,v in pairs(c:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.CanCollide=false
+			end
+		end
+	end
 end)
 
--- =========================
--- UI TABS
--- =========================
-local CombatTab = Window:CreateTab("Combat")
-local VisualTab = Window:CreateTab("Visuals")
-local MiscTab   = Window:CreateTab("Misc")
-local SettingsTab = Window:CreateTab("Settings")
-
--- Combat
-CombatTab:CreateToggle({
-    Name = "Aimbot (Hold RMB)",
-    CurrentValue = false,
-    Callback = function(v) Aimbot = v end
-})
-
-CombatTab:CreateToggle({
-    Name = "Team Check",
-    CurrentValue = true,
-    Callback = function(v) TeamCheck = v end
-})
-
-CombatTab:CreateSlider({
-    Name = "Aimbot FOV",
-    Range = {50,400},
-    Increment = 5,
-    CurrentValue = AimFOV,
-    Callback = function(v) AimFOV = v end
-})
-
-CombatTab:CreateSlider({
-    Name = "Smoothness",
-    Range = {0.05,0.5},
-    Increment = 0.01,
-    CurrentValue = Smoothness,
-    Callback = function(v) Smoothness = v end
-})
-
--- Visuals
-VisualTab:CreateToggle({
-    Name = "ESP (Names)",
-    CurrentValue = false,
-    Callback = function(v) ESPEnabled = v end
-})
-
-VisualTab:CreateToggle({
-    Name = "Show FOV Circle",
-    CurrentValue = true,
-    Callback = function(v) ShowFOV = v end
-})
-
--- Misc
-MiscTab:CreateToggle({
-    Name = "Noclip",
-    CurrentValue = false,
-    Callback = function(v) Noclip = v end
-})
-
-MiscTab:CreateSlider({
-    Name = "WalkSpeed",
-    Range = {16,50},
-    Increment = 1,
-    CurrentValue = 16,
-    Callback = function(v) WalkSpeed = v end
-})
-
-MiscTab:CreateSlider({
-    Name = "JumpPower",
-    Range = {50,120},
-    Increment = 5,
-    CurrentValue = 50,
-    Callback = function(v) JumpPower = v end
-})
-
-MiscTab:CreateButton({
-    Name = "Rejoin",
-    Callback = function()
-        TeleportService:Teleport(game.PlaceId, LocalPlayer)
-    end
-})
-
-SettingsTab:CreateButton({
-    Name = "Copy Discord",
-    Callback = function()
-        setclipboard("https://discord.gg/z4hEaaEnS")
-    end
-})
-
-SettingsTab:CreateButton({
-    Name = "Destroy UI",
-    Callback = function()
-        Rayfield:Destroy()
-        ClearESP()
-        FOVCircle:Remove()
-    end
-})
-
--- =========================
--- FXH TOGGLE BUTTON
--- =========================
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-
-local ToggleButton = Instance.new("TextButton", ScreenGui)
-ToggleButton.Size = UDim2.new(0,70,0,70)
-ToggleButton.Position = UDim2.new(0,20,0,20)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(35,35,35)
-ToggleButton.Text = "FXH"
-ToggleButton.TextColor3 = Color3.fromRGB(255,255,255)
-ToggleButton.Font = Enum.Font.Arcade
-ToggleButton.TextScaled = true
-ToggleButton.BorderSizePixel = 0
-
-local stroke = Instance.new("UIStroke", ToggleButton)
-stroke.Color = Color3.fromRGB(255,255,255)
-stroke.Thickness = 2
-
-local uiVisible = true
-ToggleButton.MouseButton1Click:Connect(function()
-    uiVisible = not uiVisible
-    if Rayfield and Rayfield.Main then
-        Rayfield.Main.Visible = uiVisible
-    end
+-- FLY
+local flyBV,flyBG
+UIS.InputBegan:Connect(function(i,g)
+	if FlyEnabled then
+		if i.KeyCode==Enum.KeyCode.Q then
+			LocalPlayer.Character.HumanoidRootPart.Velocity=Vector3.new(0,-FlySpeed,0)
+		elseif i.KeyCode==Enum.KeyCode.E then
+			LocalPlayer.Character.HumanoidRootPart.Velocity=Vector3.new(0,FlySpeed,0)
+		end
+	end
 end)
+
+-- =========================================
+-- UI BUTTON HELPERS
+-- =========================================
+local function Button(p,text,y,callback)
+	local b=Instance.new("TextButton",p)
+	b.Size=UDim2.new(0,200,0,35)
+	b.Position=UDim2.new(0,0,0,y)
+	b.Text=text
+	b.Font=Enum.Font.Arcade
+	b.TextSize=14
+	b.TextColor3=Color3.new(1,1,1)
+	b.BackgroundColor3=Color3.fromRGB(40,40,40)
+	Instance.new("UICorner",b)
+	b.MouseButton1Click:Connect(callback)
+end
+
+local function Toggle(p,text,y,callback)
+	local on=false
+	Button(p,text..": OFF",y,function(btn)
+		on=not on
+		btn.Text=text..(on and ": ON" or ": OFF")
+		callback(on)
+	end)
+end
+
+-- Combat Tab
+Toggle(CombatTab,"Aimbot (RMB)",0,function(v) Aimbot=v end)
+Toggle(CombatTab,"Team Check",45,function(v) TeamCheck=v end)
+
+-- Visual Tab
+Toggle(VisualTab,"Fly",0,function(v) FlyEnabled=v end)
+Toggle(VisualTab,"Noclip",45,function(v) Noclip=v end)
+
+-- Movement Tab
+Button(MiscTab,"WalkSpeed 30",0,function() WalkSpeed=30 end)
+Button(MiscTab,"JumpPower 100",45,function() JumpPower=100 end)
+Button(MiscTab,"Rejoin",90,function() TeleportService:Teleport(game.PlaceId,LocalPlayer) end)
+Button(MiscTab,"Close UI",135,function() Main.Visible=false end)
+
+-- FXH Toggle Button
+local ToggleBtn = Instance.new("TextButton",Gui)
+ToggleBtn.Size = UDim2.new(0,70,0,70)
+ToggleBtn.Position = UDim2.new(0,20,0,20)
+ToggleBtn.Text = "FXH"
+ToggleBtn.Font = Enum.Font.Arcade
+ToggleBtn.TextScaled = true
+ToggleBtn.TextColor3 = Color3.new(1,1,1)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+Instance.new("UICorner",ToggleBtn)
+ToggleBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
