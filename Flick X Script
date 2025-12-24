@@ -1,69 +1,34 @@
--- =========================
--- CONFIG
--- =========================
-local DISCORD_LINK = "https://discord.gg/z4hEaaEnS"
-local SCRIPT_NAME = "Flick X Script"
-local SCRIPT_KEY = "Flick-Key"
-
--- =========================
--- AUTO DISCORD COPY
--- =========================
-pcall(function()
-    setclipboard(DISCORD_LINK)
-end)
-
--- =========================
--- SERVICES
--- =========================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TeleportService = game:GetService("TeleportService")
-local StarterGui = game:GetService("StarterGui")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- =========================
--- NOTIFICATION
--- =========================
-pcall(function()
-    StarterGui:SetCore("SendNotification", {
-        Title = SCRIPT_NAME,
-        Text = "Discord copied | Get key from Discord",
-        Duration = 6
-    })
-end)
+local Rayfield =
 
--- =========================
--- RAYFIELD LOAD
--- =========================
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+    loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-    Name = SCRIPT_NAME,
-    LoadingTitle = SCRIPT_NAME,
-    LoadingSubtitle = "",
+    Name = "Flick X Script",
+    LoadingTitle = "Flick X Script",
+    LoadingSubtitle = "made by venux",
     ConfigurationSaving = { Enabled = false },
     KeySystem = true,
     KeySettings = {
-        Title = SCRIPT_NAME,
+        Title = "Flick X Script",
         Subtitle = "Key System",
-        Note = "Key: Flick-Key",
+        Note = "get key from discord",
         FileName = "FlickKey",
         SaveKey = true,
         GrabKeyFromSite = false,
-        Key = { SCRIPT_KEY }
+        Key = { "Flick-Key" }
     }
 })
 
-pcall(function()
-    Rayfield:SetWatermarkVisibility(false)
-end)
+Rayfield:SetWatermarkVisibility(false)
 
--- =========================
--- VARIABLES
--- =========================
 local Aimbot = false
 local SilentAim = false
 local TeamCheck = true
@@ -73,63 +38,50 @@ local Smoothness = 0.18
 local ShowFOV = true
 local Noclip = false
 
--- =========================
--- INPUT (RMB)
--- =========================
-UserInputService.InputBegan:Connect(function(i, g)
-    if not g and i.UserInputType == Enum.UserInputType.MouseButton2 then
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
         Holding = true
     end
 end)
 
-UserInputService.InputEnded:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton2 then
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
         Holding = false
     end
 end)
 
--- =========================
--- FOV CIRCLE (CENTERED)
--- =========================
 local FOVCircle = Drawing.new("Circle")
-FOVCircle.Color = Color3.fromRGB(255,255,255)
+FOVCircle.Color = Color3.fromRGB(255, 255, 255)
 FOVCircle.Thickness = 1
 FOVCircle.NumSides = 100
 FOVCircle.Filled = false
 
 RunService.RenderStepped:Connect(function()
-    local vp = Camera.ViewportSize
-    FOVCircle.Position = Vector2.new(vp.X / 2, vp.Y / 2)
+    local size = Camera.ViewportSize
+    FOVCircle.Position = Vector2.new(size.X / 2, size.Y / 2)
     FOVCircle.Radius = AimFOV
     FOVCircle.Visible = ShowFOV
 end)
 
--- =========================
--- TEAM CHECK
--- =========================
 local function IsEnemy(player)
-    if not TeamCheck then return true end
+    if not TeamCheck then
+        return true
+    end
     if player.Team and LocalPlayer.Team then
         return player.Team ~= LocalPlayer.Team
     end
     return true
 end
 
--- =========================
--- GET CLOSEST HEAD
--- =========================
 local function GetClosestTarget()
-    local closest, shortest = nil, AimFOV
-    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+    local closest = nil
+    local shortest = AimFOV
+    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
 
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer
-        and p.Character
-        and p.Character:FindFirstChild("Humanoid")
-        and p.Character.Humanoid.Health > 0
-        and IsEnemy(p) then
-
-            local head = p.Character:FindFirstChild("Head")
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 and IsEnemy(player) then
+            local head = player.Character:FindFirstChild("Head")
             if head then
                 local pos, visible = Camera:WorldToViewportPoint(head.Position)
                 if visible then
@@ -142,65 +94,61 @@ local function GetClosestTarget()
             end
         end
     end
+
     return closest
 end
 
--- =========================
--- AIMBOT + SILENT AIM
--- =========================
 RunService.RenderStepped:Connect(function()
     local target = GetClosestTarget()
-    if target then
-        if Aimbot and Holding then
-            Camera.CFrame = Camera.CFrame:Lerp(
-                CFrame.new(Camera.CFrame.Position, target.Position),
-                Smoothness
-            )
-        end
+    if not target then return end
 
-        if SilentAim then
-            Camera.Focus = CFrame.new(target.Position)
-        end
+    if Aimbot and Holding then
+        Camera.CFrame = Camera.CFrame:Lerp(
+            CFrame.new(Camera.CFrame.Position, target.Position),
+            Smoothness
+        )
+    end
+
+    if SilentAim then
+        Camera.Focus = CFrame.new(target.Position)
     end
 end)
 
--- =========================
--- NOCLIP LOOP
--- =========================
 RunService.Stepped:Connect(function()
-    if LocalPlayer.Character then
-        for _, v in ipairs(LocalPlayer.Character:GetDescendants()) do
-            if v:IsA("BasePart") then
-                v.CanCollide = not Noclip
-            end
+    if not LocalPlayer.Character then return end
+    for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = not Noclip
         end
     end
 end)
 
--- =========================
--- UI TABS
--- =========================
 local CombatTab = Window:CreateTab("Combat")
 local VisualTab = Window:CreateTab("Visuals")
 local MiscTab = Window:CreateTab("Misc")
 
--- Combat
 CombatTab:CreateToggle({
     Name = "Aimbot (Hold RMB)",
     CurrentValue = false,
-    Callback = function(v) Aimbot = v end
+    Callback = function(v)
+        Aimbot = v
+    end
 })
 
 CombatTab:CreateToggle({
-    Name = "Silent Aim (Soft)",
+    Name = "Silent Aim",
     CurrentValue = false,
-    Callback = function(v) SilentAim = v end
+    Callback = function(v)
+        SilentAim = v
+    end
 })
 
 CombatTab:CreateToggle({
     Name = "Team Check",
     CurrentValue = true,
-    Callback = function(v) TeamCheck = v end
+    Callback = function(v)
+        TeamCheck = v
+    end
 })
 
 CombatTab:CreateSlider({
@@ -208,7 +156,9 @@ CombatTab:CreateSlider({
     Range = {50, 400},
     Increment = 5,
     CurrentValue = AimFOV,
-    Callback = function(v) AimFOV = v end
+    Callback = function(v)
+        AimFOV = v
+    end
 })
 
 CombatTab:CreateSlider({
@@ -216,21 +166,25 @@ CombatTab:CreateSlider({
     Range = {0.05, 0.5},
     Increment = 0.01,
     CurrentValue = Smoothness,
-    Callback = function(v) Smoothness = v end
+    Callback = function(v)
+        Smoothness = v
+    end
 })
 
--- Visuals
 VisualTab:CreateToggle({
     Name = "Show FOV Circle",
     CurrentValue = true,
-    Callback = function(v) ShowFOV = v end
+    Callback = function(v)
+        ShowFOV = v
+    end
 })
 
--- Misc
 MiscTab:CreateToggle({
     Name = "Noclip",
     CurrentValue = false,
-    Callback = function(v) Noclip = v end
+    Callback = function(v)
+        Noclip = v
+    end
 })
 
 MiscTab:CreateButton({
@@ -244,6 +198,8 @@ MiscTab:CreateButton({
     Name = "Destroy UI",
     Callback = function()
         Rayfield:Destroy()
-        pcall(function() FOVCircle:Remove() end)
+        pcall(function()
+            FOVCircle:Remove()
+        end)
     end
 })
