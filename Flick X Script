@@ -36,7 +36,7 @@ local Window = Rayfield:CreateWindow({
         Subtitle = "Key System",
         Note = "",
         FileName = "FlickKey",
-        SaveKey = false,
+        SaveKey = true,          -- Automatically save key
         GrabKeyFromSite = false,
         Key = { "Flick-Key" }
     }
@@ -182,29 +182,29 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Tabs with dummy feature trick to force render
-local Combat = Window:CreateTab("Combat")
-Combat:CreateToggle({Name="__dummy__", CurrentValue=false, Callback=function(v) end})
+-- Create Tabs AFTER window fully initialized
+local function CreateTabs()
+    local Combat = Window:CreateTab("Combat")
+    local Visual = Window:CreateTab("Visuals")
+    local Misc = Window:CreateTab("Misc")
 
-local Visual = Window:CreateTab("Visuals")
-Visual:CreateToggle({Name="__dummy__", CurrentValue=false, Callback=function(v) end})
+    -- Combat
+    Combat:CreateToggle({Name="Aimbot (Hold RMB)", Callback=function(v) Aimbot=v end})
+    Combat:CreateToggle({Name="Team Check", CurrentValue=true, Callback=function(v) TeamCheck=v end})
+    Combat:CreateSlider({Name="FOV", Range={50,400}, Increment=5, CurrentValue=AimFOV, Callback=function(v) AimFOV=v end})
+    Combat:CreateSlider({Name="Smoothness", Range={0.05,0.5}, Increment=0.01, CurrentValue=Smoothness, Callback=function(v) Smoothness=v end})
 
-local Misc = Window:CreateTab("Misc")
-Misc:CreateToggle({Name="__dummy__", CurrentValue=false, Callback=function(v) end})
+    -- Visuals
+    Visual:CreateToggle({Name="ESP (Names)", Callback=function(v) ESPEnabled=v end})
+    Visual:CreateToggle({Name="Show FOV Circle", CurrentValue=true, Callback=function(v) ShowFOV=v end})
 
--- Combat
-Combat:CreateToggle({Name="Aimbot (Hold RMB)", Callback=function(v) Aimbot=v end})
-Combat:CreateToggle({Name="Team Check", CurrentValue=true, Callback=function(v) TeamCheck=v end})
-Combat:CreateSlider({Name="FOV", Range={50,400}, Increment=5, CurrentValue=AimFOV, Callback=function(v) AimFOV=v end})
-Combat:CreateSlider({Name="Smoothness", Range={0.05,0.5}, Increment=0.01, CurrentValue=Smoothness, Callback=function(v) Smoothness=v end})
+    -- Misc
+    Misc:CreateToggle({Name="Noclip", Callback=function(v) Noclip=v end})
+    Misc:CreateSlider({Name="WalkSpeed", Range={16,50}, Increment=1, CurrentValue=16, Callback=function(v) WalkSpeed=v end})
+    Misc:CreateSlider({Name="JumpPower", Range={50,120}, Increment=5, CurrentValue=50, Callback=function(v) JumpPower=v end})
+    Misc:CreateButton({Name="Rejoin", Callback=function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end})
+    Misc:CreateButton({Name="Destroy UI", Callback=function() Rayfield:Destroy() ClearESP() FOVCircle:Remove() end})
+end
 
--- Visuals
-Visual:CreateToggle({Name="ESP (Names)", Callback=function(v) ESPEnabled=v end})
-Visual:CreateToggle({Name="Show FOV Circle", CurrentValue=true, Callback=function(v) ShowFOV=v end})
-
--- Misc
-Misc:CreateToggle({Name="Noclip", Callback=function(v) Noclip=v end})
-Misc:CreateSlider({Name="WalkSpeed", Range={16,50}, Increment=1, CurrentValue=16, Callback=function(v) WalkSpeed=v end})
-Misc:CreateSlider({Name="JumpPower", Range={50,120}, Increment=5, CurrentValue=50, Callback=function(v) JumpPower=v end})
-Misc:CreateButton({Name="Rejoin", Callback=function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end})
-Misc:CreateButton({Name="Destroy UI", Callback=function() Rayfield:Destroy() ClearESP() FOVCircle:Remove() end})
+-- Delay tab creation slightly to ensure key system verified
+delay(0.5, CreateTabs)
