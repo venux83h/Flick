@@ -24,6 +24,31 @@ local JumpPower = 50
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/venix123/Kavo-UI-Library/main/source.lua"))()
 local Window = Library.CreateLib("Flick X Script", "DarkTheme")
 
+-- UI Toggle Button
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "FXHToggleUI"
+ScreenGui.Parent = game.CoreGui
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0,70,0,70)
+ToggleButton.Position = UDim2.new(0,20,0,20)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(35,35,35) -- dark
+ToggleButton.Text = "FXH"
+ToggleButton.TextColor3 = Color3.fromRGB(255,255,255)
+ToggleButton.Font = Enum.Font.Arcade
+ToggleButton.TextScaled = true
+ToggleButton.Parent = ScreenGui
+ToggleButton.BorderSizePixel = 0
+ToggleButton.ZIndex = 10
+
+local uiVisible = true
+ToggleButton.MouseButton1Click:Connect(function()
+    uiVisible = not uiVisible
+    if Library and Library.BaseFrame then
+        Library.BaseFrame.Visible = uiVisible
+    end
+end)
+
 -- Tabs
 local CombatTab = Window:NewTab("Combat")
 local VisualTab = Window:NewTab("Visuals")
