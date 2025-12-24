@@ -1,24 +1,14 @@
+-- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TeleportService = game:GetService("TeleportService")
+local StarterGui = game:GetService("StarterGui")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
-local Rayfield = 
-    loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
-
-local Window = Rayfield:CreateWindow({
-    Name = "Flick X Script",
-    LoadingTitle = "Flick X Script",
-    LoadingSubtitle = "made by venux",
-    ConfigurationSaving = { Enabled = false },
-    KeySystem = false
-})
-
-Rayfield:SetWatermarkVisibility(false)
-
+-- Variables
 local Aimbot = false
 local TeamCheck = true
 local Holding = false
@@ -30,19 +20,23 @@ local Noclip = false
 local WalkSpeed = 16
 local JumpPower = 50
 
-UserInputService.InputBegan:Connect(function(i,g)
-    if g then return end
-    if i.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = true
-    end
-end)
+-- Simple UI Library
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/venix123/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("Flick X Script", "DarkTheme")
 
-UserInputService.InputEnded:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton2 then
-        Holding = false
-    end
-end)
+-- Tabs
+local CombatTab = Window:NewTab("Combat")
+local VisualTab = Window:NewTab("Visuals")
+local MiscTab = Window:NewTab("Misc")
+local SettingsTab = Window:NewTab("Settings")
 
+-- Sections
+local CombatSection = CombatTab:NewSection("Combat Features")
+local VisualSection = VisualTab:NewSection("Visuals")
+local MiscSection = MiscTab:NewSection("Misc Features")
+local SettingsSection = SettingsTab:NewSection("Settings")
+
+-- FOV Circle
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Color = Color3.fromRGB(255,255,255)
 FOVCircle.Thickness = 1
@@ -56,6 +50,52 @@ RunService.RenderStepped:Connect(function()
     FOVCircle.Visible = ShowFOV
 end)
 
+-- Combat
+CombatSection:NewToggle("Aimbot (Hold RMB)", "Hold RMB to aim", function(v) Aimbot = v end)
+CombatSection:NewToggle("Team Check", "Only target enemies", function(v) TeamCheck = v end)
+CombatSection:NewSlider("FOV", "Aimbot FOV", 50, 400, AimFOV, function(v) AimFOV = v end)
+CombatSection:NewSlider("Smoothness", "Camera lerp smoothness", 0.05, 0.5, Smoothness, function(v) Smoothness = v end)
+
+-- Visuals
+VisualSection:NewToggle("ESP (Names)", "Show player names", function(v) ESPEnabled = v end)
+VisualSection:NewToggle("Show FOV Circle", "Display aimbot FOV circle", function(v) ShowFOV = v end)
+
+-- Misc
+MiscSection:NewToggle("Noclip", "Walk through walls", function(v) Noclip = v end)
+MiscSection:NewSlider("WalkSpeed", "Change WalkSpeed", 16, 50, WalkSpeed, function(v) WalkSpeed = v end)
+MiscSection:NewSlider("JumpPower", "Change JumpPower", 50, 120, JumpPower, function(v) JumpPower = v end)
+MiscSection:NewButton("Rejoin", "Rejoin the game", function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
+MiscSection:NewButton("Destroy UI", "Remove UI", function() Library:Remove(); FOVCircle:Remove() end)
+
+-- Settings
+SettingsSection:NewButton("Copy Discord", "Copy Discord link to clipboard", function()
+    pcall(function() setclipboard("https://discord.gg/z4hEaaEnS") end)
+    StarterGui:SetCore("SendNotification", {
+        Title = "Flick X Script",
+        Text = "Discord link copied!",
+        Duration = 5
+    })
+end)
+
+SettingsSection:NewToggle("Show Notifications", "Toggle notifications on/off", function(v)
+    StarterGui:SetCore("SendNotification", {
+        Title = "Flick X Script",
+        Text = v and "script load",
+        Duration = 3
+    })
+end)
+
+-- RMB Hold Input
+UserInputService.InputBegan:Connect(function(i,g)
+    if g then return end
+    if i.UserInputType == Enum.UserInputType.MouseButton2 then Holding = true end
+end)
+
+UserInputService.InputEnded:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton2 then Holding = false end
+end)
+
+-- Functions
 local function IsEnemy(p)
     if not TeamCheck then return true end
     if p.Team and LocalPlayer.Team then
@@ -70,13 +110,7 @@ local function GetClosestTarget()
     local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
 
     for _,p in ipairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer
-        and p.Character
-        and p.Character:FindFirstChild("Head")
-        and p.Character:FindFirstChild("Humanoid")
-        and p.Character.Humanoid.Health > 0
-        and IsEnemy(p) then
-
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 and IsEnemy(p) then
             local pos,vis = Camera:WorldToViewportPoint(p.Character.Head.Position)
             if vis then
                 local mag = (Vector2.new(pos.X,pos.Y) - center).Magnitude
@@ -87,34 +121,27 @@ local function GetClosestTarget()
             end
         end
     end
-
     return closest
 end
 
+-- Aimbot Loop
 RunService.RenderStepped:Connect(function()
     if not Aimbot or not Holding then return end
     local target = GetClosestTarget()
     if not target then return end
-
-    Camera.CFrame = Camera.CFrame:Lerp(
-        CFrame.new(Camera.CFrame.Position, target.Position),
-        Smoothness
-    )
+    Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, target.Position), Smoothness)
 end)
 
+-- ESP Loop
 local ESPObjects = {}
-
 local function ClearESP()
-    for _,v in pairs(ESPObjects) do
-        v:Remove()
-    end
+    for _,v in pairs(ESPObjects) do v:Remove() end
     ESPObjects = {}
 end
 
 RunService.RenderStepped:Connect(function()
     ClearESP()
     if not ESPEnabled then return end
-
     for _,p in ipairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
             local pos,vis = Camera:WorldToViewportPoint(p.Character.Head.Position)
@@ -124,7 +151,7 @@ RunService.RenderStepped:Connect(function()
                 t.Size = 14
                 t.Center = true
                 t.Outline = true
-                t.Position = Vector2.new(pos.X, pos.Y - 20)
+                t.Position = Vector2.new(pos.X,pos.Y - 20)
                 t.Color = Color3.fromRGB(255,0,0)
                 table.insert(ESPObjects, t)
             end
@@ -132,45 +159,18 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+-- Noclip + Movement
 RunService.Stepped:Connect(function()
     local char = LocalPlayer.Character
     if not char then return end
-
     local hum = char:FindFirstChildOfClass("Humanoid")
     if hum then
         hum.WalkSpeed = WalkSpeed
         hum.JumpPower = JumpPower
     end
-
     if Noclip then
         for _,v in ipairs(char:GetDescendants()) do
-            if v:IsA("BasePart") then
-                v.CanCollide = false
-            end
+            if v:IsA("BasePart") then v.CanCollide = false end
         end
     end
 end)
-
-local Combat = Window:CreateTab("Combat")
-local Visual = Window:CreateTab("Visuals")
-local Misc = Window:CreateTab("Misc")
-
-Combat:CreateToggle({Name="Aimbot (Hold RMB)", Callback=function(v) Aimbot=v end})
-Combat:CreateToggle({Name="Team Check", CurrentValue=true, Callback=function(v) TeamCheck=v end})
-Combat:CreateSlider({Name="FOV", Range={50,400}, Increment=5, CurrentValue=AimFOV, Callback=function(v) AimFOV=v end})
-Combat:CreateSlider({Name="Smoothness", Range={0.05,0.5}, Increment=0.01, CurrentValue=Smoothness, Callback=function(v) Smoothness=v end})
-
-Visual:CreateToggle({Name="ESP (Names)", Callback=function(v) ESPEnabled=v end})
-Visual:CreateToggle({Name="Show FOV Circle", CurrentValue=true, Callback=function(v) ShowFOV=v end})
-
-Misc:CreateToggle({Name="Noclip", Callback=function(v) Noclip=v end})
-Misc:CreateSlider({Name="WalkSpeed", Range={16,50}, Increment=1, CurrentValue=16, Callback=function(v) WalkSpeed=v end})
-Misc:CreateSlider({Name="JumpPower", Range={50,120}, Increment=5, CurrentValue=50, Callback=function(v) JumpPower=v end})
-Misc:CreateButton({Name="Rejoin", Callback=function()
-    TeleportService:Teleport(game.PlaceId, LocalPlayer)
-end})
-Misc:CreateButton({Name="Destroy UI", Callback=function()
-    Rayfield:Destroy()
-    ClearESP()
-    FOVCircle:Remove()
-end})
