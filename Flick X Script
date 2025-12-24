@@ -2,22 +2,9 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TeleportService = game:GetService("TeleportService")
-local StarterGui = game:GetService("StarterGui")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
-
-pcall(function()
-    setclipboard("https://discord.gg/z4hEaaEnS")
-end)
-
-pcall(function()
-    StarterGui:SetCore("SendNotification", {
-        Title = "Flick X Script",
-        Text = "Discord copied. Get the key there.",
-        Duration = 6
-    })
-end)
 
 local Rayfield = 
     loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
@@ -27,16 +14,7 @@ local Window = Rayfield:CreateWindow({
     LoadingTitle = "Flick X Script",
     LoadingSubtitle = "made by venux",
     ConfigurationSaving = { Enabled = false },
-    KeySystem = true,
-    KeySettings = {
-        Title = "Flick X Script",
-        Subtitle = "Key System",
-        Note = "",
-        FileName = "FlickKey",
-        SaveKey = true,
-        GrabKeyFromSite = false,
-        Key = { "Flick-Key" }
-    }
+    KeySystem = false
 })
 
 Rayfield:SetWatermarkVisibility(false)
@@ -87,8 +65,8 @@ local function IsEnemy(p)
 end
 
 local function GetClosestTarget()
-    local closest = nil
-    local dist = AimFOV
+    local closest
+    local shortest = AimFOV
     local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
 
     for _,p in ipairs(Players:GetPlayers()) do
@@ -102,8 +80,8 @@ local function GetClosestTarget()
             local pos,vis = Camera:WorldToViewportPoint(p.Character.Head.Position)
             if vis then
                 local mag = (Vector2.new(pos.X,pos.Y) - center).Magnitude
-                if mag < dist then
-                    dist = mag
+                if mag < shortest then
+                    shortest = mag
                     closest = p.Character.Head
                 end
             end
@@ -139,17 +117,16 @@ RunService.RenderStepped:Connect(function()
 
     for _,p in ipairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
-            local head = p.Character.Head
-            local pos,vis = Camera:WorldToViewportPoint(head.Position)
+            local pos,vis = Camera:WorldToViewportPoint(p.Character.Head.Position)
             if vis then
-                local text = Drawing.new("Text")
-                text.Text = p.Name
-                text.Size = 14
-                text.Center = true
-                text.Outline = true
-                text.Position = Vector2.new(pos.X, pos.Y - 20)
-                text.Color = Color3.fromRGB(255,0,0)
-                table.insert(ESPObjects, text)
+                local t = Drawing.new("Text")
+                t.Text = p.Name
+                t.Size = 14
+                t.Center = true
+                t.Outline = true
+                t.Position = Vector2.new(pos.X, pos.Y - 20)
+                t.Color = Color3.fromRGB(255,0,0)
+                table.insert(ESPObjects, t)
             end
         end
     end
@@ -189,7 +166,9 @@ Visual:CreateToggle({Name="Show FOV Circle", CurrentValue=true, Callback=functio
 Misc:CreateToggle({Name="Noclip", Callback=function(v) Noclip=v end})
 Misc:CreateSlider({Name="WalkSpeed", Range={16,50}, Increment=1, CurrentValue=16, Callback=function(v) WalkSpeed=v end})
 Misc:CreateSlider({Name="JumpPower", Range={50,120}, Increment=5, CurrentValue=50, Callback=function(v) JumpPower=v end})
-Misc:CreateButton({Name="Rejoin", Callback=function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end})
+Misc:CreateButton({Name="Rejoin", Callback=function()
+    TeleportService:Teleport(game.PlaceId, LocalPlayer)
+end})
 Misc:CreateButton({Name="Destroy UI", Callback=function()
     Rayfield:Destroy()
     ClearESP()
