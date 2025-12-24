@@ -16,7 +16,7 @@ end)
 pcall(function()
     StarterGui:SetCore("SendNotification", {
         Title = "Flick X Script",
-        Text = "Discord copied. Get the key there.",
+        Text = "Discord copied.",
         Duration = 6
     })
 end)
@@ -35,7 +35,7 @@ local Window = Rayfield:CreateWindow({
     KeySettings = {
         Title = "Flick X Script",
         Subtitle = "Key System",
-        Note = "",
+        Note = "get key from discord",
         FileName = "FlickKey",
         SaveKey = false,
         GrabKeyFromSite = false,
