@@ -2,9 +2,22 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TeleportService = game:GetService("TeleportService")
+local StarterGui = game:GetService("StarterGui")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
+
+pcall(function()
+    setclipboard("https://discord.gg/z4hEaaEnS")
+end)
+
+pcall(function()
+    StarterGui:SetCore("SendNotification", {
+        Title = "Flick X Script",
+        Text = "Discord link copied. Get the key there.",
+        Duration = 6
+    })
+end)
 
 local Rayfield =
 
@@ -19,9 +32,9 @@ local Window = Rayfield:CreateWindow({
     KeySettings = {
         Title = "Flick X Script",
         Subtitle = "Key System",
-        Note = "get key from discord",
+        Note = "",
         FileName = "FlickKey",
-        SaveKey = true,
+        SaveKey = false,
         GrabKeyFromSite = false,
         Key = { "Flick-Key" }
     }
@@ -30,7 +43,6 @@ local Window = Rayfield:CreateWindow({
 Rayfield:SetWatermarkVisibility(false)
 
 local Aimbot = false
-local SilentAim = false
 local TeamCheck = true
 local Holding = false
 local AimFOV = 150
@@ -108,10 +120,6 @@ RunService.RenderStepped:Connect(function()
             Smoothness
         )
     end
-
-    if SilentAim then
-        Camera.Focus = CFrame.new(target.Position)
-    end
 end)
 
 RunService.Stepped:Connect(function()
@@ -132,14 +140,6 @@ CombatTab:CreateToggle({
     CurrentValue = false,
     Callback = function(v)
         Aimbot = v
-    end
-})
-
-CombatTab:CreateToggle({
-    Name = "Silent Aim",
-    CurrentValue = false,
-    Callback = function(v)
-        SilentAim = v
     end
 })
 
