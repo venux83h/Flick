@@ -16,14 +16,13 @@ end)
 pcall(function()
     StarterGui:SetCore("SendNotification", {
         Title = "Flick X Script",
-        Text = "Discord copied.",
+        Text = "Discord copied. Get the key there.",
         Duration = 6
     })
 end)
 
 -- Rayfield
 local Rayfield =
-
     loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
@@ -35,7 +34,7 @@ local Window = Rayfield:CreateWindow({
     KeySettings = {
         Title = "Flick X Script",
         Subtitle = "Key System",
-        Note = "get key from discord",
+        Note = "",
         FileName = "FlickKey",
         SaveKey = false,
         GrabKeyFromSite = false,
@@ -183,10 +182,15 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Tabs
+-- Tabs with dummy feature trick to force render
 local Combat = Window:CreateTab("Combat")
+Combat:CreateToggle({Name="__dummy__", CurrentValue=false, Callback=function(v) end})
+
 local Visual = Window:CreateTab("Visuals")
+Visual:CreateToggle({Name="__dummy__", CurrentValue=false, Callback=function(v) end})
+
 local Misc = Window:CreateTab("Misc")
+Misc:CreateToggle({Name="__dummy__", CurrentValue=false, Callback=function(v) end})
 
 -- Combat
 Combat:CreateToggle({Name="Aimbot (Hold RMB)", Callback=function(v) Aimbot=v end})
